@@ -1,0 +1,21 @@
+<circuit version="1.1.0-SR1" rev="2005" stepSize="1000000" stepsPS="1000000" NLsteps="100000" reaStep="1000000" animate="0" >
+
+<item itemtype="Package" CircId="Package-2" mainComp="false" Show_id="true" Show_Val="false" Pos="-376,-24" rotation="0" hflip="1" vflip="1" label="FC28.pkg" idLabPos="9.3352,-28.6517" labelrot="0" valLabPos="-16,20" valLabRot="0" boardPos="-1e+06,-1e+06" circPos="0,0" boardRot="-1e+06" circRot="0" boardHflip="1" boardVflip="1" SubcType="Board" Width="7" Height="27" Name="FC28" Package_File="FC28.package" Background="fc-28.png" Logic_Symbol="true" />
+
+<item itemtype="Package" CircId="Package-3" mainComp="false" Show_id="true" Show_Val="false" Pos="-464,-12" rotation="0" hflip="1" vflip="1" label="FC28_LS.pkg" idLabPos="-0.386508,-31.5952" labelrot="0" valLabPos="-16,20" valLabRot="0" boardPos="-1e+06,-1e+06" circPos="0,0" boardRot="-1e+06" circRot="0" boardHflip="1" boardVflip="1" SubcType="Logic" Width="5" Height="3" Name="FC28" Package_File="FC28_LS.package" Logic_Symbol="true" />
+
+<item itemtype="Tunnel" CircId="Tunnel-4" mainComp="false" Show_id="false" Show_Val="false" Pos="-284,36" rotation="0" hflip="1" vflip="1" label="Tunnel-4" idLabPos="-16,-24" labelrot="0" valLabPos="-16,20" valLabRot="0" boardPos="96,52" circPos="-284,36" boardRot="0" circRot="0" boardHflip="1" boardVflip="1" Name="VCC" IsBus="false" />
+
+<item itemtype="Tunnel" CircId="Tunnel-5" mainComp="false" Show_id="false" Show_Val="false" Pos="-272,68" rotation="0" hflip="1" vflip="1" label="Tunnel-5" idLabPos="-16,-24" labelrot="0" valLabPos="-16,20" valLabRot="0" boardPos="108,84" circPos="-272,68" boardRot="0" circRot="0" boardHflip="1" boardVflip="1" Name="SENAL" IsBus="false" />
+
+<item itemtype="Tunnel" CircId="Tunnel-6" mainComp="false" Show_id="false" Show_Val="false" Pos="-208,24" rotation="0" hflip="1" vflip="1" label="Tunnel-6" idLabPos="-16,-24" labelrot="0" valLabPos="-16,20" valLabRot="0" boardPos="172,40" circPos="-208,24" boardRot="0" circRot="0" boardHflip="1" boardVflip="1" Name="GND" IsBus="false" />
+
+<item itemtype="Potentiometer" CircId="Potentiometer-7" mainComp="false" Show_id="false" Show_Val="false" Pos="-260,36" rotation="0" hflip="1" vflip="1" label="Potentiometer-7" idLabPos="-16,-40" labelrot="0" valLabPos="15.7209,5.2306" valLabRot="0" boardPos="28,204" circPos="-260,36" boardRot="0" circRot="0" boardHflip="1" boardVflip="1" Resistance="10 kΩ" Value_Ohm="10000 Ω" Slider="false" Scale="1" />
+
+<item itemtype="Connector" uid="Connector-1" startpinid="Potentiometer-7-PinA" endpinid="Tunnel-4-pin" pointList="-276,36,-284,36" />
+
+<item itemtype="Connector" uid="Connector-2" startpinid="Potentiometer-7-PinM" endpinid="Tunnel-5-pin" pointList="-260,52,-260,68,-272,68" />
+
+<item itemtype="Connector" uid="Connector-8" startpinid="Tunnel-6-pin" endpinid="Potentiometer-7-PinB" pointList="-208,24,-208,36,-244,36" />
+
+</circuit>
