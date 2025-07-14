@@ -1,112 +1,379 @@
 .nolist
 .include "m328def.inc"
 
-.def adc_low  = r15 ; guarda a parte menos significativa do resultado do ADC
+.def adc_low  = r16 ; guarda a parte menos significativa do resultado do ADC
 .def adc_high = r17 ; guarda a parte mais significativa do resultado do ADC
 .def temp_low = r18 ; temporário
 .def temp_high = r19 ; temporário
-.def counter1 = r23; counter 1 display
-.def counter = r25; counter2 display
+.def counter4 = r23; milhar
+.def counter2 = r25; dezena
+.def counter1 = r24; ascii
+.def counter3 = r21; centena
 
 .ORG 0X0000
-   rjmp main
-main:
     ldi r20, 0xFF
     out DDRD, r20; setando PORTA D para output
     out DDRB, r20; setando PORTA B para output/controle display
     cbi PORTB, 0;
-
-iniciar_lcd:
-      RCALL delay_ms_display_ligar
-      LDI   R16, 0x33         ;init LCD for 4-bit data
-      RCALL command_wrt       ;send to command register
-      RCALL delay_ms
-      LDI   R16, 0x32         ;init LCD for 4-bit data
-      RCALL command_wrt
-      RCALL delay_ms
-      LDI   R16, 0x28         ;LCD 2 lines, 5x7 matrix
-      RCALL command_wrt
-      RCALL delay_ms
-      LDI   R16, 0x0C         ;disp ON, cursor OFF
-      RCALL command_wrt
-      LDI   R16, 0x01         ;clear LCD
-      RCALL command_wrt
-      RCALL delay_ms
-      LDI   R16, 0x06         ;shift cursor right
-      RCALL command_wrt
-escrever_lcd:
-    RCALL mensagem
+    ; ldi ascii, 48
+    ldi counter1, 0
+    ldi counter2, 0
+    ldi counter3, 0
+    cbi PORTC, PC0;
+    rjmp iniciar_adc
 iniciar_adc:
+    ldi r16, high(RAMEND)
+    out SPH, r16
+    ldi r16, low(RAMEND)
+    out SPL, r16
     sbi DDRC, 0; setando A0 para input
     ldi temp_low, (1<<REFS0)  ; usa o Vcc do Arduino como referência de voltagem
-    sts ADMUX, temp_low    
-    ldi temp_low, (1<<ADEN)|(1<<ADPS2)|(1<<ADPS1)|(1<<ADPS0) ; Liga o ADC (ADEN) e
+    sts ADMUX, temp_low       ; e seleciona o canal 0 como padrao
+    ldi temp_low, (1<<ADEN)|(1<<ADPS2)|(1<<ADPS1)|(1<<ADPS0)| (1<<ADSC) |(1<<ADATE) ; Liga o ADC (ADEN) e
     ; define o prescaler para 128
-    sts ADCSRA, temp_low;
+    sts ADCSRA, temp_low
+    
+iniciar_lcd:
+    rcall delay_ms_display_ligar
+    ldi   R16, 0x33         ;init LCD for 4-bit data
+    rcall enviar_comando_lcd       ;send to command register
+    rcall delay_ms_display_ligar
+    ldi   R16, 0x32         ;init LCD for 4-bit data
+    rcall enviar_comando_lcd
+    rcall delay_ms_display_ligar
+    ldi   R16, 0x28         ;LCD 2 lines, 5x7 matrix
+    rcall enviar_comando_lcd
+    rcall delay_ms_display_ligar
+    ldi   R16, 0x0C         ;disp ON, cursor OFF
+    rcall enviar_comando_lcd
+    ldi   R16, 0x01         ;clear LCD
+    rcall enviar_comando_lcd
+    rcall delay_ms_display_ligar
+    ldi   R16, 0x06         ;shift cursor right
+    rcall enviar_comando_lcd
+escrever_lcd:
+    rcall mensagem
+    rjmp ler_adc
+mensagem:
+    ;Mensagem
+    ldi   R16, 0x01         ;clear LCD
+    rcall enviar_comando_lcd
+    rcall delay_ms_display_ligar
+
+    ldi R16, 'A'
+    rcall enviar_dado_lcd
+    rcall delay_segundos_mensagem
+
+    ldi R16, 'D'
+    rcall enviar_dado_lcd
+    rcall delay_segundos_mensagem
+
+    ldi R16, 'C'
+    rcall enviar_dado_lcd
+    rcall delay_segundos_mensagem
+
+    ldi R16, 'H'
+    rcall enviar_dado_lcd
+    rcall delay_segundos_mensagem
+
+    ldi R16, ' '
+    rcall enviar_dado_lcd
+    rcall delay_segundos_mensagem
+
+    ldi R16, ' '
+    rcall enviar_dado_lcd
+    rcall delay_segundos_mensagem
+    
+    ldi R16, ' '
+    rcall enviar_dado_lcd
+    rcall delay_segundos_mensagem
+
+    ldi R16, ' '
+    rcall enviar_dado_lcd
+    rcall delay_segundos_mensagem
+
+    ldi R16, 'A'
+    rcall enviar_dado_lcd
+    rcall delay_segundos_mensagem
+
+    ldi R16, 'D'
+    rcall enviar_dado_lcd
+    rcall delay_segundos_mensagem
+
+    ldi R16, 'C'
+    rcall enviar_dado_lcd
+    rcall delay_segundos_mensagem
+
+    ldi R16, 'L'
+    rcall enviar_dado_lcd
+    rcall delay_segundos_mensagem
+
+    ;Segunda linha
+
+    ldi R16, 0xC0        
+    rcall enviar_comando_lcd
+    rcall delay_ms_display_ligar
+    ret
 ler_adc:
-    ldi r20, 0b11000111
+    ldi r20, 0xC7
     sts ADCSRA, r20
 esperar_adc:
     lds r21, ADCSRA
     sbrs r21, 4
     rjmp esperar_adc
-    ldi temp_low, 0b11010111
-    sts ADCSRA, temp_low
+    ;desligar adc
+    ldi   r21, (1 << ADIF)
+    STS   ADCSRA, R21
+
     lds adc_low, ADCL
     lds adc_high, ADCH
+    
+    ldi counter4, 0
+    ldi counter3, 0   
+    ldi counter2, 0   
+    ldi counter1, 0       
+    
+    mov temp_low, adc_low
+    mov temp_high, adc_high
+teste:
+
+    ldi counter1, 48
+     sbrc temp_high, 7
+    ldi r16, 1
+    sbrs temp_high, 7
+    ldi r16, 0
+    add r16, counter1
+    rcall enviar_dado_lcd
+    rcall delay_ms_display_ligar
+     sbrc temp_high, 6
+    ldi r16, 1
+    sbrs temp_high, 6
+    ldi r16, 0
+    add r16, counter1
+    rcall enviar_dado_lcd
+    rcall delay_ms_display_ligar
+    sbrc temp_high, 5
+    ldi r16, 1
+    sbrs temp_high, 5
+    ldi r16, 0
+    add r16, counter1
+    rcall enviar_dado_lcd
+    rcall delay_ms_display_ligar
+     sbrc temp_high, 4
+    ldi r16, 1
+    sbrs temp_high, 4
+    ldi r16, 0
+    add r16, counter1
+    rcall enviar_dado_lcd
+    rcall delay_ms_display_ligar
+    sbrc temp_high, 3
+    ldi r16, 1
+    sbrs temp_high, 3
+    ldi r16, 0
+    add r16, counter1
+    rcall enviar_dado_lcd
+    rcall delay_ms_display_ligar
+    sbrc temp_high, 2
+    ldi r16, 1
+    sbrs temp_high, 2
+    ldi r16, 0
+    add r16, counter1
+    rcall enviar_dado_lcd
+    rcall delay_ms_display_ligar
+    sbrc temp_high, 0
+    ldi r16, 1
+    sbrs temp_high, 0
+    ldi r16, 0
+    add r16, counter1
+    rcall enviar_dado_lcd
+    rcall delay_ms_display_ligar
+    sbrc temp_high, 1
+    ldi r16, 1
+    sbrs temp_high, 1
+    ldi r16, 0
+    add r16, counter1
+    rcall enviar_dado_lcd
+    rcall delay_ms_display_ligar
+    sbrc temp_low, 7
+    ldi r16, 1
+    sbrs temp_low, 7
+    ldi r16, 0
+    add r16, counter1
+    rcall enviar_dado_lcd
+    rcall delay_ms_display_ligar
+     sbrc temp_low, 6
+    ldi r16, 1
+    sbrs temp_low, 6
+    ldi r16, 0
+    add r16, counter1
+    rcall enviar_dado_lcd
+    rcall delay_ms_display_ligar
+    sbrc temp_low, 5
+    ldi r16, 1
+    sbrs temp_low, 5
+    ldi r16, 0
+    add r16, counter1
+    rcall enviar_dado_lcd
+    rcall delay_ms_display_ligar
+     sbrc temp_low, 4
+    ldi r16, 1
+    sbrs temp_low, 4
+    ldi r16, 0
+    add r16, counter1
+    rcall enviar_dado_lcd
+    rcall delay_ms_display_ligar
+    sbrc temp_low, 3
+    ldi r16, 1
+    sbrs temp_low, 3
+    ldi r16, 0
+    add r16, counter1
+    rcall enviar_dado_lcd
+    rcall delay_ms_display_ligar
+    sbrc temp_low, 2
+    ldi r16, 1
+    sbrs temp_low, 2
+    ldi r16, 0
+    add r16, counter1
+    rcall enviar_dado_lcd
+    rcall delay_ms_display_ligar
+    sbrc temp_low, 1
+    ldi r16, 1
+    sbrs temp_low, 1
+    ldi r16, 0
+    add r16, counter1
+    rcall enviar_dado_lcd
+    rcall delay_ms_display_ligar
+    sbrc temp_low, 0
+    ldi r16, 1
+    sbrs temp_low, 0
+    ldi r16, 0
+    add r16, counter1
+    rcall enviar_dado_lcd
+    rcall delay_ms_display_ligar
+
+; div_1000:
+;     ldi r26, 0b11101000
+;     ldi r27, 0b00000011
+;     cp temp_high, r27
+;     cpc temp_low, r26
+;     brlo div_100
+;     sub temp_low, r26
+;     sbc temp_high, r27
+;     inc counter4
+;     rjmp div_1000
+
+; div_100:
+;     ldi r26, 0b01100100
+;     ldi r27, 0b00000000
+;     cp temp_high, r27
+;     cpc temp_low, r26
+;     brlo div_10
+;     sub temp_low, r26
+;     sbc temp_high, r27
+;     inc counter3
+;     rjmp div_100
+; div_10:
+;     ldi r26, 0b00001010
+;     ldi r27, 0b00000000
+;     cp temp_high, r27
+;     cpc temp_low, r26
+;     brlo show
+;     sub temp_low, r26
+;     sbc temp_high, r27
+;     inc counter2
+;     rjmp div_10
+; show:
+;     ldi temp_high, 0b00110000
+;     mov r16, counter4   ; Hundreds
+;     add r16, temp_high
+;     rcall enviar_dado_lcd
+;     rcall delay_ms_display_ligar
+
+;     mov r16, counter3   ; Tens
+;     add r16, temp_high
+;     rcall enviar_dado_lcd
+;     rcall delay_ms_display_ligar
+
+;     mov r16, counter2       ; Units
+;     add r16, temp_high
+;     rcall enviar_dado_lcd
+;     rcall delay_ms_display_ligar
+
+;     mov r16, temp_low      ; Units
+;     add r16, temp_high
+;     rcall enviar_dado_lcd
+;     rcall delay_ms_display_ligar
+
+    ldi r16, 0xc0
+    rcall enviar_comando_lcd
+    rcall delay_segundos_mensagem
+    clr adc_high
+    clr adc_low
+    clr temp_high
+    clr temp_low
     rjmp ler_adc
 enviar_comando_lcd:
-     MOV   R27, R16
-      ANDI  R27, 0xF0         ;mask low nibble & keep high nibble
-      OUT   PORTD, R27        ;o/p high nibble to port D
-      CBI   PORTB, 1          ;RS = 0 for command
-      SBI   PORTB, 0          ;EN = 1
-      RCALL delay_short       ;widen EN pulse
-      CBI   PORTB, 0          ;EN = 0 for H-to-L pulse
-      RCALL delay_us          ;delay in micro seconds
-      ;----------------------------------------------------
-      MOV   R27, R16
-      SWAP  R27               ;swap nibbles
-      ANDI  R27, 0xF0         ;mask low nibble & keep high nibble
-      OUT   PORTD, R27        ;o/p high nibble to port D
-      SBI   PORTB, 0          ;EN = 1
-      RCALL delay_short       ;widen EN pulse
-      CBI   PORTB, 0          ;EN = 0 for H-to-L pulse
-      RCALL delay_us          ;delay in micro seconds
-      RET
+    mov   R27, R16
+    andi  R27, 0xF0         ;mask low nibble & keep high nibble
+    out   PORTD, R27        ;o/p high nibble to port D
+    cbi   PORTB, 1          ;RS = 0 for command
+    sbi   PORTB, 0          ;EN = 1
+    rcall delay_short       ;widen EN pulse
+    cbi   PORTB, 0          ;EN = 0 for H-to-L pulse
+    rcall delay_us          ;delay in micro seconds
+    ;----------------------------------------------------
+    mov   R27, R16
+    SWAP  R27               ;swap nibbles
+    andi  R27, 0xF0         ;mask low nibble & keep high nibble
+    out   PORTD, R27        ;o/p high nibble to port D
+    sbi   PORTB, 0          ;EN = 1
+    rcall delay_short       ;widen EN pulse
+    cbi   PORTB, 0          ;EN = 0 for H-to-L pulse
+    rcall delay_us          ;delay in micro seconds
+    ret
 enviar_dado_lcd:
-    MOV   R27, R16
-      ANDI  R27, 0xF0         ;mask low nibble & keep high nibble
-      OUT   PORTD, R27        ;o/p high nibble to port D
-      SBI   PORTB, 1          ;RS = 1 for data
-      SBI   PORTB, 0          ;EN = 1
-      RCALL delay_short       ;make wide EN pulse
-      CBI   PORTB, 0          ;EN = 0 for H-to-L pulse
-      RCALL delay_us          ;delay in micro seconds
-      ;----------------------------------------------------
-      MOV   R27, R16
-      SWAP  R27               ;swap nibbles
-      ANDI  R27, 0xF0         ;mask low nibble & keep high nibble
-      OUT   PORTD, R27        ;o/p high nibble to port D
-      SBI   PORTB, 0          ;EN = 1
-      RCALL delay_short       ;widen EN pulse
-      CBI   PORTB, 0          ;EN = 0 for H-to-L pulse
-      RCALL delay_us          ;delay in micro seconds
-      RET
-mensagem:
+    mov   R27, R16
+    andi  R27, 0xF0         ;mask low nibble & keep high nibble
+    out   PORTD, R27        ;o/p high nibble to port D
+    sbi   PORTB, 1          ;RS = 1 for data
+    sbi   PORTB, 0          ;EN = 1
+    rcall delay_short       ;make wide EN pulse
+    cbi   PORTB, 0          ;EN = 0 for H-to-L pulse
+    rcall delay_us          ;delay in micro seconds
+    ;----------------------------------------------------
+    mov   R27, R16
+    SWAP  R27               ;swap nibbles
+    andi  R27, 0xF0         ;mask low nibble & keep high nibble
+    out   PORTD, R27        ;o/p high nibble to port D
+    sbi   PORTB, 0          ;EN = 1
+    rcall delay_short       ;widen EN pulse
+    cbi   PORTB, 0          ;EN = 0 for H-to-L pulse
+    rcall delay_us          ;delay in micro seconds
+    ret
 delay_short:
-      NOP
-      NOP
-      RET
+    nop
+    nop
+    ret
 delay_us:
-      LDI   R20, 90
-      RCALL delay_short
-      DEC   R20
-      BRNE  l3
-      RET    
+    ldi   R20, 90
+loop1: rcall delay_short
+    dec   R20
+    brne  loop1
+    ret    
 delay_ms_display_ligar:
-    LDI   R21, 40
-    RCALL delay_us
+    ldi   R21, 40
+loop2: rcall delay_us
     DEC   R21
-    BRNE  l4
-    RET
+    BRNE  loop2
+    ret
+delay_segundos_mensagem:   
+    ldi   R20, 255    ;outer loop counter 
+loop3: ldi   R21, 255    ;mid loop counter
+loop4: ldi   R22, 20     ;inner loop counter to give 0.25s delay
+loop5: DEC   R22         ;decrement inner loop
+    BRNE  loop5          ;loop if not zero
+    DEC   R21         ;decrement mid loop
+    BRNE  loop4          ;loop if not zero
+    DEC   R20         ;decrement outer loop
+    BRNE  loop3          ;loop if not zero
+    ret 
