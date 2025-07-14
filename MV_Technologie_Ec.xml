@@ -1,0 +1,12 @@
+<!DOCTYPE SimulIDE>
+
+<itemlib>
+    
+    <itemset category="MV Technologie Ec" type="Subcircuit" folder="MV_Technologie_Ec">
+    
+        <item name="Relay"   info=" Sin Optoacoplador" icon="Relay_icon.png"/> 
+        <item name="ULN2803"   info="A" icon="ic2.png"/> 
+        <item name="FC28"   info="Sensor De Humedad del Suelo, Higrometro FC-28" icon="FC_28.png"/> 
+    </itemset>
+
+</itemlib>
