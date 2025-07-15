@@ -48,30 +48,33 @@
 .org 0x0000
     rjmp    main_entry
 
-.org PCI2addr
-    rjmp    PCI2_ISR
+.org PCI0addr ; o erro pode ser causado por esse endereço incorreto (tem que ver se ele é da porta B mesmo)
+    rjmp    PCI_ISR
 
 ;-------------------------------------------------------------------------------
-; ROTINA DE SERVIÇO DE INTERRUPÇÃO (ISR) - PCI2 (PORTB)
+; ROTINA DE SERVIÇO DE INTERRUPÇÃO (ISR) - PCI (PORTB)
 ;-------------------------------------------------------------------------------
-PCI2_ISR:
+PCI_ISR:
     push    temp_low
     in      temp_low, SREG
     push    temp_low
+    push    pin_state
     push    lcd_data_reg
     push    general_temp
     push    delay_low
     push    delay_high
 
+    ; Pequeno delay para estabilização (debounce de software), pode não ser necessário
     ldi     general_temp, 5
     rcall   delay_ms
 
     in      pin_state, PINB
-    sbrs    pin_state, TRIGGER_TRISTE_PIN
+    ; Lógica corrigida para executar a rotina quando o pino está ALTO
+    sbrc    pin_state, TRIGGER_TRISTE_PIN  
     rcall   rotina_carinha_triste
-    sbrs    pin_state, TRIGGER_NEUTRA_PIN
+    sbrc    pin_state, TRIGGER_NEUTRA_PIN  
     rcall   rotina_carinha_neutra
-    sbrs    pin_state, TRIGGER_FELIZ_PIN
+    sbrc    pin_state, TRIGGER_FELIZ_PIN 
     rcall   rotina_carinha_feliz
 
 isr_exit:
@@ -79,6 +82,7 @@ isr_exit:
     pop     delay_low
     pop     general_temp
     pop     lcd_data_reg
+    pop     pin_state
     pop     temp_low
     out     SREG, temp_low
     pop     temp_low
@@ -112,7 +116,6 @@ main_entry:
     rcall   lcd_create_char
 
     ; Configura Pinos de Sinalização como SAÍDA
-    ; para que o main_loop possa controlar seu estado e disparar a interrupção.
     sbi     DDRB, TRIGGER_TRISTE_PIN
     sbi     DDRB, TRIGGER_NEUTRA_PIN
     sbi     DDRB, TRIGGER_FELIZ_PIN
@@ -124,11 +127,11 @@ main_entry:
     ldi     temp_low, (1<<ADEN)|(1<<ADPS2)|(1<<ADPS1)|(1<<ADPS0)
     sts     ADCSRA, temp_low
 
-    ; Configura Interrupções de Mudança de Pino
-    ldi     temp_low, (1<<PCIE2)
+    ; Configura Interrupções de Mudança de Pino para PORTB
+    ldi     temp_low, (1<<PCIE0)
     sts     PCICR, temp_low
-    ldi     temp_low, (1<<PCINT19)|(1<<PCINT20)|(1<<PCINT21)
-    sts     PCMSK2, temp_low
+    ldi     temp_low, (1<<PCINT3)|(1<<PCINT4)|(1<<PCINT5) 
+    sts     PCMSK0, temp_low
 
     ; Habilita Interrupções Globais
     sei
@@ -142,7 +145,6 @@ main_loop:
     rcall   ler_valor_adc
 
     ; Compara o valor do ADC e altera o estado dos pinos de sinalização.
-    ; Essa mudança de estado dispara a interrupção.
     ldi     temp_low, low(341)
     ldi     temp_high, high(341)
     cp      adc_low, temp_low
@@ -243,12 +245,16 @@ delay_2ms_loop:
     pop     delay_low
     ret
 
+; Delay de ~100us para clock de 16MHz
 delay_100us:
-    ldi     general_temp, 40
+    ldi     general_temp, 228 
 delay_100us_loop:
-    nop
-    dec     general_temp
-    brne    delay_100us_loop
+    nop                 ; 1 ciclo
+    nop                 ; 1 ciclo
+    nop                 ; 1 ciclo
+    nop                 ; 1 ciclo
+    dec     general_temp    ; 1 ciclo
+    brne    delay_100us_loop ; 2 ciclos (Total: 7 ciclos * 228 = 1596 ciclos ~= 100us)
     ret
 
 lcd_toggle_enable:
