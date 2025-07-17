@@ -4,7 +4,7 @@
 
 <item itemtype="Hd44780" CircId="Hd44780-97" mainComp="false" Show_id="true" Show_Val="false" Pos="144,-72" rotation="0" hflip="1" vflip="1" label="Hd44780-97" idLabPos="70,-82" labelrot="0" valLabPos="-16,20" valLabRot="0" Rows="2" Cols="16" />
 
-<item itemtype="Subcircuit" CircId="Uno-98" mainComp="false" Show_id="true" Show_Val="false" Pos="348,-4" rotation="0" hflip="1" vflip="1" label="Uno-98" idLabPos="0,-20" labelrot="0" valLabPos="-16,20" valLabRot="0" Logic_Symbol="false">
+<item itemtype="Subcircuit" CircId="Uno-98" mainComp="false" Show_id="true" Show_Val="false" Pos="344,-4" rotation="0" hflip="1" vflip="1" label="Uno-98" idLabPos="0,-20" labelrot="0" valLabPos="-16,20" valLabRot="0" Logic_Symbol="false">
 <mainCompProps MainCompId="mega328-109" Frequency="16 MHz" Program="mostrandodados.hex" Auto_Load="false" saveEepr="true" MainMcu="true" SerialMon="-1" />
 </item>
 
@@ -14,15 +14,15 @@
 
 <item itemtype="Ground" CircId="Ground-102" mainComp="false" Show_id="false" Show_Val="false" Pos="104,88" rotation="0" hflip="1" vflip="1" label="Ground-102" idLabPos="-16,8" labelrot="0" valLabPos="-16,20" valLabRot="0" />
 
-<item itemtype="Potentiometer" CircId="Potentiometer-107" mainComp="false" ShowProp="Resistance" Show_id="false" Show_Val="true" Pos="592,84" rotation="0" hflip="1" vflip="1" label="Potentiometer-107" idLabPos="-16,-40" labelrot="0" valLabPos="15,-20" valLabRot="0" Resistance="10 kΩ" Value_Ohm="9770 Ω" Slider="false" Scale="1" />
+<item itemtype="Subcircuit" CircId="FC28-108" mainComp="false" Show_id="true" Show_Val="false" Pos="564,128" rotation="0" hflip="1" vflip="1" label="FC28-108" idLabPos="41.8388,-10.7709" labelrot="0" valLabPos="-16,20" valLabRot="0" Logic_Symbol="false" />
 
-<item itemtype="Connector" uid="Connector-5" startpinid="AudioOut-14-rPin" endpinid="Uno-98-GND2" pointList="232,124,356,124,356,132" />
+<item itemtype="Connector" uid="Connector-5" startpinid="AudioOut-14-rPin" endpinid="Uno-98-GND2" pointList="232,124,352,124,352,132" />
 
-<item itemtype="Connector" uid="Connector-6" startpinid="AudioOut-14-lPin" endpinid="Uno-98-13" pointList="232,132,356,132,356,124" />
+<item itemtype="Connector" uid="Connector-6" startpinid="AudioOut-14-lPin" endpinid="Uno-98-13" pointList="232,132,352,132,352,124" />
 
-<item itemtype="Connector" uid="Connector-19" startpinid="Hd44780-97-PinRS" endpinid="Uno-98-9" pointList="160,-64,160,92,356,92" />
+<item itemtype="Connector" uid="Connector-19" startpinid="Hd44780-97-PinRS" endpinid="Uno-98-9" pointList="160,-64,160,92,352,92" />
 
-<item itemtype="Connector" uid="Connector-20" startpinid="Hd44780-97-PinEn" endpinid="Uno-98-8" pointList="176,-64,176,84,356,84" />
+<item itemtype="Connector" uid="Connector-20" startpinid="Hd44780-97-PinEn" endpinid="Uno-98-8" pointList="176,-64,176,84,352,84" />
 
 <item itemtype="Connector" uid="Connector-24" startpinid="Fixed Voltage-101-outnod" endpinid="Potentiometer-100-PinA" pointList="32,24,64,24,64,20" />
 
@@ -30,18 +30,18 @@
 
 <item itemtype="Connector" uid="Connector-26" startpinid="Potentiometer-100-PinM" endpinid="Hd44780-97-PinRW" pointList="80,36,80,112,168,112,168,-64" />
 
-<item itemtype="Connector" uid="Connector-27" startpinid="Hd44780-97-dataPin7" endpinid="Uno-98-7" pointList="240,-64,240,68,356,68" />
+<item itemtype="Connector" uid="Connector-27" startpinid="Hd44780-97-dataPin7" endpinid="Uno-98-7" pointList="240,-64,240,68,352,68" />
 
-<item itemtype="Connector" uid="Connector-28" startpinid="Hd44780-97-dataPin6" endpinid="Uno-98-6" pointList="232,-64,232,60,356,60" />
+<item itemtype="Connector" uid="Connector-28" startpinid="Hd44780-97-dataPin6" endpinid="Uno-98-6" pointList="232,-64,232,60,352,60" />
 
-<item itemtype="Connector" uid="Connector-29" startpinid="Hd44780-97-dataPin5" endpinid="Uno-98-5" pointList="224,-64,224,52,356,52" />
+<item itemtype="Connector" uid="Connector-29" startpinid="Hd44780-97-dataPin5" endpinid="Uno-98-5" pointList="224,-64,224,52,352,52" />
 
-<item itemtype="Connector" uid="Connector-30" startpinid="Hd44780-97-dataPin4" endpinid="Uno-98-4" pointList="216,-64,216,44,356,44" />
+<item itemtype="Connector" uid="Connector-30" startpinid="Hd44780-97-dataPin4" endpinid="Uno-98-4" pointList="216,-64,216,44,352,44" />
 
-<item itemtype="Connector" uid="Connector-37" startpinid="Potentiometer-107-PinB" endpinid="Uno-98-GND1" pointList="608,84,608,124,516,124,516,84,500,84" />
+<item itemtype="Connector" uid="Connector-44" startpinid="FC28-108-SENAL" endpinid="Uno-98-A0" pointList="588,124,588,52,496,52" />
 
-<item itemtype="Connector" uid="Connector-36" startpinid="Potentiometer-107-PinM" endpinid="Uno-98-A0" pointList="592,100,528,100,528,52,500,52" />
+<item itemtype="Connector" uid="Connector-45" startpinid="FC28-108-VCC" endpinid="Uno-98-5V0" pointList="592,124,496,124,496,92" />
 
-<item itemtype="Connector" uid="Connector-35" startpinid="Potentiometer-107-PinA" endpinid="Uno-98-5V0" pointList="576,84,500,84,500,92" />
+<item itemtype="Connector" uid="Connector-46" startpinid="FC28-108-GND" endpinid="Uno-98-GND1" pointList="596,124,496,124,496,84" />
 
 </circuit>
