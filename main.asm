@@ -29,7 +29,7 @@
 .def delay_low      = r24 ; Usado em rotinas de delay (parte baixa de um contador de 16 bits)
 .def delay_high     = r25 ; Usado em rotinas de delay (parte alta de um contador de 16 bits)
 .def adc_low        = r16 ; Armazena a parte baixa do resultado do ADC (ADCL)
-.def adc_high       = r17 ; Armazena a parte alta do resultado do ADC (ADCH)
+.def adc_high       = r17 ; Armazena a parte alta do resultado do ADC (ADCH)    
 
 ; --- Constantes de Pinos de Sinalização Interna ---
 ; Estes pinos são configurados como SAÍDA. O programa principal os manipula
@@ -40,7 +40,7 @@
 
 ; --- Constantes de Pinos do LCD (modo de 4 bits) ---
 .equ LCD_RS_PIN = PD0 ; Pino Register Select: 0 para comando, 1 para dados
-.equ LCD_EN_PIN = PD1 ; Pino Enable: um pulso neste pino trava os dados no LCD
+.equ LCD_EN_PIN = PB0 ; Pino Enable: um pulso neste pino trava os dados no LCD
 .equ LCD_D4_PIN = PD4 ; Pino de dados 4 do LCD
 .equ LCD_D5_PIN = PD5 ; Pino de dados 5 do LCD
 .equ LCD_D6_PIN = PD6 ; Pino de dados 6 do LCD
@@ -302,9 +302,9 @@ delay_100us_loop:
 
 lcd_toggle_enable:
     ; Gera o pulso no pino 'Enable' para que o LCD leia os dados nos pinos D4-D7.
-    sbi     PORTD, LCD_EN_PIN ; Seta EN para nível ALTO
+    sbi     PORTB, LCD_EN_PIN ; Seta EN para nível ALTO
     rcall   delay_100us       ; Pequeno delay
-    cbi     PORTD, LCD_EN_PIN ; Seta EN para nível BAIXO
+    cbi     PORTB, LCD_EN_PIN ; Seta EN para nível BAIXO
     rcall   delay_100us       ; Pequeno delay
     ret
 
@@ -344,8 +344,11 @@ lcd_send_data:
 
 lcd_init:
     ; Sequência de inicialização para o display LCD em modo de 4 bits.
-    sbi     DDRD, LCD_RS_PIN ; Configura todos os pinos do LCD como SAÍDA
-    sbi     DDRD, LCD_EN_PIN
+    
+    ; Configura os pinos do LCD como saída.
+    sbi     DDRB, LCD_EN_PIN ; Configura PB0 (EN) como saída usando DDRB
+    
+    sbi     DDRD, LCD_RS_PIN ; Configura PD0 (RS) como saída
     sbi     DDRD, LCD_D4_PIN
     sbi     DDRD, LCD_D5_PIN
     sbi     DDRD, LCD_D6_PIN

@@ -3,10 +3,10 @@
 .list
 
 ; ==============================================================================
-; Projeto:        Display de Emojis com ADC (Versão Simplificada)
+; Projeto:        Display de Emojis com ADC (Pinagem Modificada)
 ; Microcontrolador: ATmega328P
 ; Clock:          16 MHz
-; VERSÂO SEM INTERRUPÇÕES
+; Descrição:      Versão sem interrupções, usando RS=PB1, EN=PB0, D4-D7=PD4-PD7
 ; ==============================================================================
 
 ; --- Registradores ---
@@ -14,24 +14,25 @@
 .def temp_high      = r19
 .def lcd_data_reg   = r20
 .def counter_reg    = r21
+.def last_state     = r22
 .def general_temp   = r23
 .def delay_low      = r24
 .def delay_high     = r25
 .def adc_low        = r16
 .def adc_high       = r17
 
-; --- Pinos do LCD ---
-.def last_state     = r22 ; Guarda o último estado para evitar reescrever o LCD
+; --- Estados para os Emojis ---
 .equ STATE_TRISTE = 0
 .equ STATE_NEUTRO = 1
 .equ STATE_FELIZ  = 2
 
-.equ LCD_RS_PIN = PD0
-.equ LCD_EN_PIN = PD1
-.equ LCD_D4_PIN = PD4
-.equ LCD_D5_PIN = PD5
-.equ LCD_D6_PIN = PD6
-.equ LCD_D7_PIN = PD7
+; --- Pinos do LCD (modo de 4 bits) --- ;<-- MUDANÇA: Definições atualizadas
+.equ LCD_RS_PIN = PB1 ; Pino Register Select: 0 para comando, 1 para dados (AGORA EM PORTB)
+.equ LCD_EN_PIN = PB0 ; Pino Enable: um pulso neste pino trava os dados no LCD (AGORA EM PORTB)
+.equ LCD_D4_PIN = PD4 ; Pino de dados 4 do LCD
+.equ LCD_D5_PIN = PD5 ; Pino de dados 5 do LCD
+.equ LCD_D6_PIN = PD6 ; Pino de dados 6 do LCD
+.equ LCD_D7_PIN = PD7 ; Pino de dados 7 do LCD
 
 ; --- Comandos do LCD ---
 .equ LCD_CLEAR_DISPLAY  = 0b00000001
@@ -83,8 +84,9 @@ main_entry:
     sts     ADCSRA, temp_low
 
     ; Inicializa o estado para forçar a primeira escrita no LCD
-    ldi     last_state, 0xFF 
-    
+    ldi     last_state, 0xFF
+    ;rjmp    main_loop
+
 ;-------------------------------------------------------------------------------
 ; LOOP PRINCIPAL
 ;-------------------------------------------------------------------------------
@@ -106,19 +108,19 @@ main_loop:
 
 display_feliz:
     ldi     temp_low, STATE_FELIZ
-    cpse    temp_low, last_state ; Se o estado não mudou, pula a reescrita
+    cpse    temp_low, last_state
     rcall   rotina_carinha_feliz
     rjmp    main_loop
 
 display_neutro:
     ldi     temp_low, STATE_NEUTRO
-    cpse    temp_low, last_state ; Se o estado não mudou, pula a reescrita
+    cpse    temp_low, last_state
     rcall   rotina_carinha_neutra
     rjmp    main_loop
 
 display_triste:
     ldi     temp_low, STATE_TRISTE
-    cpse    temp_low, last_state ; Se o estado não mudou, pula a reescrita
+    cpse    temp_low, last_state
     rcall   rotina_carinha_triste
     rjmp    main_loop
 
@@ -132,21 +134,21 @@ lcd_posiciona_cursor_inicio:
     ret
 
 rotina_carinha_triste:
-    mov     last_state, temp_low ; Atualiza o último estado
+    mov     last_state, temp_low
     rcall   lcd_posiciona_cursor_inicio
     ldi     lcd_data_reg, 0
     rcall   lcd_send_data
     ret
 
 rotina_carinha_neutra:
-    mov     last_state, temp_low ; Atualiza o último estado
+    mov     last_state, temp_low
     rcall   lcd_posiciona_cursor_inicio
     ldi     lcd_data_reg, 1
     rcall   lcd_send_data
     ret
 
 rotina_carinha_feliz:
-    mov     last_state, temp_low ; Atualiza o último estado
+    mov     last_state, temp_low
     rcall   lcd_posiciona_cursor_inicio
     ldi     lcd_data_reg, 2
     rcall   lcd_send_data
@@ -158,17 +160,14 @@ ler_valor_adc:
     sts     ADCSRA, temp_low
 loop_espera_adc:
     lds     temp_low, ADCSRA
-    sbrc    temp_low, ADSC
+    sbrs    temp_low, ADIF
     rjmp    loop_espera_adc
+    lds     temp_low, ADCSRA
+    ori     temp_low, (1<<ADIF)
+    sts     ADCSRA, temp_low
     lds     adc_low, ADCL
     lds     adc_high, ADCH
     ret
-
-; --- ROTINAS DE BAIXO NÍVEL (delay, lcd, etc.) SÃO AS MESMAS DA VERSÃO CORRIGIDA ---
-; (O código para delays e controle do LCD seria inserido aqui)
-; Copie as rotinas de delay_ms, delay_2ms, delay_100us (corrigida), lcd_toggle_enable, 
-; lcd_write_nibble, lcd_send_byte, lcd_send_command, lcd_send_data, lcd_init, 
-; lcd_create_char e os dados das carinhas da Versão 1 para cá.
 
 ;-------------------------------------------------------------------------------
 ; ROTINAS DE BAIXO NÍVEL
@@ -202,27 +201,25 @@ delay_2ms_loop:
     pop     delay_low
     ret
 
-; Delay de ~100us para clock de 16MHz
 delay_100us:
-    ldi     general_temp, 228 ; <--- CORREÇÃO: Valor ajustado para precisão
+    ldi     general_temp, 228
 delay_100us_loop:
-    nop                 ; 1 ciclo
-    nop                 ; 1 ciclo
-    nop                 ; 1 ciclo
-    nop                 ; 1 ciclo
-    dec     general_temp    ; 1 ciclo
-    brne    delay_100us_loop ; 2 ciclos (Total: 7 ciclos * 228 = 1596 ciclos ~= 100us)
+    nop
+    nop
+    nop
+    nop
+    dec     general_temp
+    brne    delay_100us_loop
     ret
 
 lcd_toggle_enable:
-    sbi     PORTD, LCD_EN_PIN
+    sbi     PORTB, LCD_EN_PIN  ; <-- MUDANÇA: Agora opera na PORTB
     rcall   delay_100us
-    cbi     PORTD, LCD_EN_PIN
+    cbi     PORTB, LCD_EN_PIN  ; <-- MUDANÇA: Agora opera na PORTB
     rcall   delay_100us
     ret
 
 lcd_write_nibble:
-    mov     general_temp, lcd_data_reg
     in      temp_low, PORTD
     andi    temp_low, 0x0F
     or      temp_low, general_temp
@@ -241,19 +238,20 @@ lcd_send_byte:
     ret
 
 lcd_send_command:
-    cbi     PORTD, LCD_RS_PIN
+    cbi     PORTB, LCD_RS_PIN  ; <-- MUDANÇA: Agora opera na PORTB
     rcall   lcd_send_byte
     rcall   delay_2ms
     ret
 
 lcd_send_data:
-    sbi     PORTD, LCD_RS_PIN
+    sbi     PORTB, LCD_RS_PIN  ; <-- MUDANÇA: Agora opera na PORTB
     rcall   lcd_send_byte
     ret
 
 lcd_init:
-    sbi     DDRD, LCD_RS_PIN
-    sbi     DDRD, LCD_EN_PIN
+    sbi     DDRB, LCD_RS_PIN   ; <-- MUDANÇA: Configura pino RS como saída na PORTB
+    cbi     PORTB, LCD_RS_PIN   ; RS = 0 — garantido antes da inicialização
+    sbi     DDRB, LCD_EN_PIN   ; <-- MUDANÇA: Configura pino EN como saída na PORTB
     sbi     DDRD, LCD_D4_PIN
     sbi     DDRD, LCD_D5_PIN
     sbi     DDRD, LCD_D6_PIN
