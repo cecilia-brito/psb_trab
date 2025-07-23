@@ -7,23 +7,29 @@
 .def temp_high = r19 ; temporário
 .def counter4 = r23; milhar
 .def counter2 = r25; dezena
-.def counter1 = r24; ascii
 .def seco = r30
+.def modo_atual = r24
+.def counter_time = r26
+.equ min = 15
+.equ cinco_min = 75
 .org 0x0000
     rjmp main
+.org 0x002
+    jmp INT0_ISR
 ; .org 0x0008
 ;     jmp PCINT1_ISR
-.org 0x001A ;endereco vetor de interrupções timer1 por overflow(quando passa o valor de TCN1L/H)
-    jmp TIMER1_OVF_ISR
+; .org 0x001A ;endereco vetor de interrupções timer1 por overflow(quando passa o valor de TCN1L/H)
+;     jmp TIMER1_OVF_ISR
+.org 0x0020
 main:
     ldi r20, 0xFF
     out DDRD, r20; setando PORTA D para output
     out DDRB, r20; setando PORTA B para output/controle display
-
-    ldi counter1, 0
+    cbi DDRD, 2
+    sbi PORTD,2 
     ldi counter2, 0
     ldi adc_high, 0
-    sei
+    ldi modo_atual, 1
 iniciar_adc:
     ldi r16, high(RAMEND)
     out SPH, r16
@@ -53,25 +59,31 @@ iniciar_lcd:
     rcall delay_ms_display_ligar
     ldi   R16, 0x06         ;shift cursor right
     rcall enviar_comando_lcd
-inciar_pcint:
-    ldi     temp_low, (1<<PCIE1)
-    sts     PCICR, temp_low
-    ldi     temp_low, (1<<PCINT8)
-    sts     PCMSK1, temp_low
+inciar_int0:
+    ; ldi     temp_low, (1<<PCIE1)
+    ; sts     PCICR, temp_low
+    ; ldi     temp_low, (1<<PCINT8)
+    ; sts     PCMSK1, temp_low
+    ldi r20, (1<<ISC01)       ; interrupção na borda de descida
+    sts EICRA, r20
+
+    ldi r20, (1<<INT0)        ; habilita a interrupção INT0
+    sts EIMSK, r20
+    sei
 iniciar_timer:
-    ldi temp_low, low(0x10000)
-    sts TCNT1L, temp_low
-    ldi temp_low,high(0x10000)
-    sts TCNT1H, temp_low
+    ; ldi temp_low, low(0x10000)
+    ; sts TCNT1L, temp_low
+    ; ldi temp_low,high(0x10000)
+    ; sts TCNT1H, temp_low
 
-    ldi temp_low, 0
-    sts TCCR1A, temp_low
+    ; ldi temp_low, 0
+    ; sts TCCR1A, temp_low
 
-    ldi     temp_low, (1<<CS12)|(1<<CS10)
-    sts     TCCR1B, temp_low
+    ; ldi     temp_low, (1<<CS12)|(1<<CS10)
+    ; sts     TCCR1B, temp_low
 
-    ldi     temp_low, (1<<TOIE1)
-    sts     TIMSK1, temp_low
+    ; ldi     temp_low, (1<<TOIE1)
+    ; sts     TIMSK1, temp_low
 escrever_lcd:
     rjmp ler_adc
 mensagem_seco:
@@ -229,42 +241,41 @@ mensagem_nseco:
     rcall delay_ms_display_ligar
     ret
 ler_adc:
-    lds r20, ADCSRA
-    ori r20, (1 << ADSC)     
-    sts ADCSRA, r20
-esperar_adc:
-    lds r21, ADCSRA
-    sbrs r21, 4
-    rjmp esperar_adc
-    ;desligar adc
-    lds   r21, ADCSRA
-    ori r21, (1 << ADIF)
-    sts  ADCSRA, R21
+;     lds r20, ADCSRA
+;     ori r20, (1 << ADSC)     
+;     sts ADCSRA, r20
+; esperar_adc:
+;     lds r21, ADCSRA
+;     sbrs r21, 4
+;     rjmp esperar_adc
+;     ;desligar adc
+;     lds   r21, ADCSRA
+;     ori r21, (1 << ADIF)
+;     sts  ADCSRA, R21
 
-    lds adc_low, ADCL
-    lds adc_high, ADCH
-    ldi seco, 0
-eadc:    
-    mov temp_low, adc_low
-    mov temp_high, adc_high
-    ldi counter2, low(900)
-    ldi counter4, high(900)
-    cp  temp_low, counter2
-    cpc temp_high, counter4
-    brsh show_seco
-    ldi counter2, low(400)
-    ldi counter4, high(400)
-    cp  temp_low, counter2
-    cpc temp_high, counter4
-    brlo show_umido
-    show_umido:
-     
-       rcall mensagem_umido
-       rjmp fim_adc
-    show_seco:
-        ldi seco, 1
-        rcall mensagem_seco
-        rjmp fim_adc 
+;     lds adc_low, ADCL
+;     lds adc_high, ADCH
+;     ldi seco, 0
+; eadc:    
+;     mov temp_low, adc_low
+;     mov temp_high, adc_high
+;     ldi counter2, low(900)
+;     ldi counter4, high(900)
+;     cp  temp_low, counter2
+;     cpc temp_high, counter4
+;     brsh show_seco
+;     ldi counter2, low(400)
+;     ldi counter4, high(400)
+;     cp  temp_low, counter2
+;     cpc temp_high, counter4
+;     brlo show_umido
+;     show_umido:
+;        rcall mensagem_umido
+;        rjmp fim_adc
+;     show_seco:
+;         ldi seco, 1
+;         rcall mensagem_seco
+;         rjmp fim_adc 
 
     ;divisão utilizando divisões sucessivas por potências de 10 para contar cada digíto
     ; div_1000:;milhar
@@ -299,15 +310,16 @@ eadc:
     ;     inc counter2
     ;     rjmp div_10
     ; show:
-    ;     ldi R16, 0xC0        
-    ;     rcall enviar_comando_lcd
-    ;     rcall delay_ms_display_ligar
-    ;     ldi temp_high, 48
+    fim_adc:
+        ldi R16, 0xC0        
+        rcall enviar_comando_lcd
+        rcall delay_ms_display_ligar
+        ldi temp_high, 48
 
-    ;     mov r16, counter1   ; milhar
-    ;     add r16, temp_high
-    ;     rcall enviar_dado_lcd
-    ;     rcall delay_ms_display_ligar
+        mov r16, modo_atual   ; milhar
+        add r16, temp_high
+        rcall enviar_dado_lcd
+        rcall delay_ms_display_ligar
 
     ;     ldi r16, ' '   ; milhar
     ;     ; add r16, temp_high
@@ -334,11 +346,14 @@ eadc:
     ;     rcall delay_ms_display_ligar
     ;     ;;escrever na segunda linha na próxima leitura
        
-       fim_adc: rjmp ler_adc
+        rjmp ler_adc
 
 enviar_comando_lcd:
     mov   R27, R16
     andi  R27, 0xF0         ;mask low nibble & keep high nibble
+    in r20, PORTD
+    andi r20, 0x0F
+    or r27, r20
     out   PORTD, R27        ;o/p high nibble to port D
     cbi   PORTB, 1          ;RS = 0 for command
     sbi   PORTB, 0          ;EN = 1
@@ -349,6 +364,9 @@ enviar_comando_lcd:
     mov   R27, R16
     SWAP  R27               ;swap nibbles
     andi  R27, 0xF0         ;mask low nibble & keep high nibble
+    in r20, PORTD
+    andi r20, 0x0F
+    or r27, r20
     out   PORTD, R27        ;o/p high nibble to port D
     sbi   PORTB, 0          ;EN = 1
     rcall delay_short       ;widen EN pulse
@@ -358,6 +376,9 @@ enviar_comando_lcd:
 enviar_dado_lcd:
     mov   R27, R16
     andi  R27, 0xF0         ;mask low nibble & keep high nibble
+    in r20, PORTD
+    andi r20, 0x0F
+    or r27, r20
     out   PORTD, R27        ;o/p high nibble to port D
     sbi   PORTB, 1          ;RS = 1 for data
     sbi   PORTB, 0          ;EN = 1
@@ -368,6 +389,9 @@ enviar_dado_lcd:
     mov   R27, R16
     SWAP  R27               ;swap nibbles
     andi  R27, 0xF0         ;mask low nibble & keep high nibble
+    in r20, PORTD
+    andi r20, 0x0F
+    or r27, r20
     out   PORTD, R27        ;o/p high nibble to port D
     sbi   PORTB, 0          ;EN = 1
     rcall delay_short       ;widen EN pulse
@@ -392,23 +416,65 @@ enviar_dado_lcd:
 ;         out SREG, r16
 ;         pop r16
 ;         reti
+INT0_ISR:
+    push r16
+    in   r16, SREG
+    push r16
+   
+    sbi PORTB, 4
+   
+    ; ldi r16, 4
+    inc  modo_atual ; Incrementa o modo atual
+    ; cpse modo_atual, r16
+    ; ldi  modo_atual, 1 ; Reseta para o modo 1 se passar do modo 3
+    pop r16
+    out SREG, r16
+    pop r16
+    reti
+
 TIMER1_OVF_ISR:
     push r16
     in   r16, SREG
     push r16
 
+    
     cpi seco, 1
-    brlo nao_seco
+    brlo nao_seco; seco é 0, não toca o buzzer
+    inc counter_time
 
+    cpi modo_atual, 1 ; Verifica se o modo atual é 1
+    brne compare_dois
+    jmp tocar_buzzer
+    
+
+    compare_dois:
+    cpi modo_atual, 2
+    brne compare_tres
+    cpi counter_time, min
+    brne final
+    jmp tocar_buzzer
+    
+    compare_tres:
+    cpi modo_atual, 3
+    brne final
+    cpi counter_time, cinco_min
+    brne final
+    jmp tocar_buzzer
+
+    tocar_buzzer:
     sbi PORTB, 5
     rcall delay_segundos_mensagem
     cbi PORTB, 5
+    jmp final
 
     nao_seco:
     ldi counter2, low(0x10000)
     sts TCNT1L, counter2
     ldi counter4,high(0x10000)
     sts TCNT1H, counter4
+    ldi counter_time, 0
+
+    final:
     pop r16
     out SREG, r16
     pop r16
