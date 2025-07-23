@@ -11,16 +11,15 @@
 .def seco = r30
 .org 0x0000
     rjmp main
-.org 0x0008
-    jmp PCINT1_ISR
+; .org 0x0008
+;     jmp PCINT1_ISR
 .org 0x001A ;endereco vetor de interrupções timer1 por overflow(quando passa o valor de TCN1L/H)
     jmp TIMER1_OVF_ISR
 main:
     ldi r20, 0xFF
     out DDRD, r20; setando PORTA D para output
     out DDRB, r20; setando PORTA B para output/controle display
-    cbi PORTB, 5;
-    ; ldi ascii, 48
+
     ldi counter1, 0
     ldi counter2, 0
     ldi adc_high, 0
@@ -73,7 +72,6 @@ iniciar_timer:
 
     ldi     temp_low, (1<<TOIE1)
     sts     TIMSK1, temp_low
-
 escrever_lcd:
     rjmp ler_adc
 mensagem_seco:
@@ -245,12 +243,10 @@ esperar_adc:
 
     lds adc_low, ADCL
     lds adc_high, ADCH
-
+    ldi seco, 0
 eadc:    
-    ; sei
     mov temp_low, adc_low
     mov temp_high, adc_high
-    ldi counter1, 0
     ldi counter2, low(900)
     ldi counter4, high(900)
     cp  temp_low, counter2
@@ -262,13 +258,13 @@ eadc:
     cpc temp_high, counter4
     brlo show_umido
     show_umido:
-        rcall mensagem_umido
+     
+       rcall mensagem_umido
        rjmp fim_adc
     show_seco:
+        ldi seco, 1
         rcall mensagem_seco
-        rjmp fim_adc
-  
-   
+        rjmp fim_adc 
 
     ;divisão utilizando divisões sucessivas por potências de 10 para contar cada digíto
     ; div_1000:;milhar
@@ -378,30 +374,36 @@ enviar_dado_lcd:
     cbi   PORTB, 0          ;EN = 0 for H-to-L pulse
     rcall delay_us          ;delay in micro seconds
     ret
-PCINT1_ISR:
-    push r16
-    in   r16, SREG
-    push r16
-    ; in r16,PORTD
-    ; ori r16, 0b00000010
-    ; out PORTD, r16
-    sbi PORTD, 2
-    rcall delay_ms_display_ligar
-    fim_pcint:
-        pop r16
-        out SREG, r16
-        pop r16
-        reti
- 
+; PCINT1_ISR:
+;     push r16
+;     in   r16, SREG
+;     push r16
+;     ; in r16,PORTD
+;     ; ori r16, 0b00000010
+;     ; out PORTD, r16
+   
+;     sbi PORTB, 4
+;   rcall delay_ms_display_ligar
+;     cbi PORTB, 4
+;     ; cbi PORTB, 4
+;     ; rcall delay_ms_display_ligar
+;     fim_pcint:
+;         pop r16
+;         out SREG, r16
+;         pop r16
+;         reti
 TIMER1_OVF_ISR:
     push r16
     in   r16, SREG
     push r16
 
-    cpi counter1, 1
-    brne nao_seco
+    cpi seco, 1
+    brlo nao_seco
+
     sbi PORTB, 5
+    rcall delay_segundos_mensagem
     cbi PORTB, 5
+
     nao_seco:
     ldi counter2, low(0x10000)
     sts TCNT1L, counter2
