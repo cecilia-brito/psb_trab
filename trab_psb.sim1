@@ -5,7 +5,7 @@
 <item itemtype="Hd44780" CircId="Hd44780-97" mainComp="false" Show_id="true" Show_Val="false" Pos="144,-72" rotation="0" hflip="1" vflip="1" label="Hd44780-97" idLabPos="70,-82" labelrot="0" valLabPos="-16,20" valLabRot="0" Rows="2" Cols="16" />
 
 <item itemtype="Subcircuit" CircId="Uno-98" mainComp="false" Show_id="true" Show_Val="false" Pos="344,-4" rotation="0" hflip="1" vflip="1" label="Uno-98" idLabPos="0,-20" labelrot="0" valLabPos="-16,20" valLabRot="0" Logic_Symbol="false">
-<mainCompProps MainCompId="mega328-109" Frequency="16 MHz" Program="mostrandodados.hex" Auto_Load="false" saveEepr="true" MainMcu="true" SerialMon="-1" />
+<mainCompProps MainCompId="mega328-109" Frequency="16 MHz" Program="main.hex" Auto_Load="false" saveEepr="true" MainMcu="true" SerialMon="-1" />
 </item>
 
 <item itemtype="Potentiometer" CircId="Potentiometer-100" mainComp="false" ShowProp="Resistance" Show_id="false" Show_Val="true" Pos="80,20" rotation="0" hflip="1" vflip="1" label="Potentiometer-100" idLabPos="-16,-40" labelrot="0" valLabPos="15,-20" valLabRot="0" Resistance="1 kΩ" Value_Ohm="996 Ω" Slider="false" Scale="1" />

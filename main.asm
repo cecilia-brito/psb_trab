@@ -48,7 +48,7 @@
 .org 0x0000
     rjmp    main_entry
 
-.org PCI0addr ; o erro pode ser causado por esse endereço incorreto (tem que ver se ele é da porta B mesmo)
+.org 0x0008 ; o erro pode ser causado por esse endereço incorreto (tem que ver se ele é da porta B mesmo)
     rjmp    PCI_ISR
 
 ;-------------------------------------------------------------------------------
