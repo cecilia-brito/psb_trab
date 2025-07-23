@@ -68,22 +68,22 @@ inciar_int0:
     sts EICRA, r20
 
     ldi r20, (1<<INT0)        ; habilita a interrupção INT0
-    sts EIMSK, r20
+    out EIMSK, r20
     sei
 iniciar_timer:
-    ; ldi temp_low, low(0x10000)
-    ; sts TCNT1L, temp_low
-    ; ldi temp_low,high(0x10000)
-    ; sts TCNT1H, temp_low
+    ldi temp_low, low(0x10000)
+    sts TCNT1L, temp_low
+    ldi temp_low,high(0x10000)
+    sts TCNT1H, temp_low
 
-    ; ldi temp_low, 0
-    ; sts TCCR1A, temp_low
+    ldi temp_low, 0
+    sts TCCR1A, temp_low
 
-    ; ldi     temp_low, (1<<CS12)|(1<<CS10)
-    ; sts     TCCR1B, temp_low
+    ldi     temp_low, (1<<CS12)|(1<<CS10)
+    sts     TCCR1B, temp_low
 
-    ; ldi     temp_low, (1<<TOIE1)
-    ; sts     TIMSK1, temp_low
+    ldi     temp_low, (1<<TOIE1)
+    sts     TIMSK1, temp_low
 escrever_lcd:
     rjmp ler_adc
 mensagem_seco:
@@ -241,41 +241,41 @@ mensagem_nseco:
     rcall delay_ms_display_ligar
     ret
 ler_adc:
-;     lds r20, ADCSRA
-;     ori r20, (1 << ADSC)     
-;     sts ADCSRA, r20
-; esperar_adc:
-;     lds r21, ADCSRA
-;     sbrs r21, 4
-;     rjmp esperar_adc
-;     ;desligar adc
-;     lds   r21, ADCSRA
-;     ori r21, (1 << ADIF)
-;     sts  ADCSRA, R21
+    lds r20, ADCSRA
+    ori r20, (1 << ADSC)     
+    sts ADCSRA, r20
+esperar_adc:
+    lds r21, ADCSRA
+    sbrs r21, 4
+    rjmp esperar_adc
+    ;desligar adc
+    lds   r21, ADCSRA
+    ori r21, (1 << ADIF)
+    sts  ADCSRA, R21
 
-;     lds adc_low, ADCL
-;     lds adc_high, ADCH
-;     ldi seco, 0
-; eadc:    
-;     mov temp_low, adc_low
-;     mov temp_high, adc_high
-;     ldi counter2, low(900)
-;     ldi counter4, high(900)
-;     cp  temp_low, counter2
-;     cpc temp_high, counter4
-;     brsh show_seco
-;     ldi counter2, low(400)
-;     ldi counter4, high(400)
-;     cp  temp_low, counter2
-;     cpc temp_high, counter4
-;     brlo show_umido
-;     show_umido:
-;        rcall mensagem_umido
-;        rjmp fim_adc
-;     show_seco:
-;         ldi seco, 1
-;         rcall mensagem_seco
-;         rjmp fim_adc 
+    lds adc_low, ADCL
+    lds adc_high, ADCH
+    ldi seco, 0
+eadc:    
+    mov temp_low, adc_low
+    mov temp_high, adc_high
+    ldi counter2, low(900)
+    ldi counter4, high(900)
+    cp  temp_low, counter2
+    cpc temp_high, counter4
+    brsh show_seco
+    ldi counter2, low(400)
+    ldi counter4, high(400)
+    cp  temp_low, counter2
+    cpc temp_high, counter4
+    brlo show_umido
+    show_umido:
+       rcall mensagem_umido
+       rjmp fim_adc
+    show_seco:
+        ldi seco, 1
+        rcall mensagem_seco
+        rjmp fim_adc 
 
     ;divisão utilizando divisões sucessivas por potências de 10 para contar cada digíto
     ; div_1000:;milhar
@@ -421,23 +421,21 @@ INT0_ISR:
     in   r16, SREG
     push r16
    
-    sbi PORTB, 4
+    sbi PORTB, 4 ;teste led
    
     ; ldi r16, 4
-    inc  modo_atual ; Incrementa o modo atual
+    ; inc  modo_atual ; Incrementa o modo atual
     ; cpse modo_atual, r16
     ; ldi  modo_atual, 1 ; Reseta para o modo 1 se passar do modo 3
     pop r16
     out SREG, r16
     pop r16
     reti
-
 TIMER1_OVF_ISR:
     push r16
     in   r16, SREG
     push r16
 
-    
     cpi seco, 1
     brlo nao_seco; seco é 0, não toca o buzzer
     inc counter_time
