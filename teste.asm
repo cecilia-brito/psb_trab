@@ -120,9 +120,19 @@ mensagem_seco:
     ldi R16, '!'
     rcall enviar_dado_lcd
     rcall delay_segundos_mensagem
+
     ldi R16, ' '
     rcall enviar_dado_lcd
     rcall delay_segundos_mensagem
+
+    ldi R16, ' '
+    rcall enviar_dado_lcd
+    rcall delay_segundos_mensagem
+
+     ldi R16, ' '
+    rcall enviar_dado_lcd
+    rcall delay_segundos_mensagem
+
     ldi R16, 0xC0
     rcall enviar_comando_lcd
     rcall delay_ms_display_ligar
@@ -229,6 +239,14 @@ mensagem_nseco:
     rcall enviar_dado_lcd
     rcall delay_segundos_mensagem
 
+    ldi R16, ' '
+    rcall enviar_dado_lcd
+    rcall delay_segundos_mensagem
+
+    ldi R16, ' '
+    rcall enviar_dado_lcd
+    rcall delay_segundos_mensagem
+    
     ldi R16, ' '
     rcall enviar_dado_lcd
     rcall delay_segundos_mensagem
