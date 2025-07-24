@@ -1,4 +1,9 @@
+<<<<<<< HEAD
 *.hex
 *.obj
 *.elf
 *.o
+=======
+.hex
+.obj
+>>>>>>> origin/magno
