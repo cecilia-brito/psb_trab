@@ -15,3 +15,10 @@ Além das configurações padrão (diretivas, definições, vetores de interrup�
 A lógica principal consiste de um loop infinito que inicia a conversão do ADC (esperando até que a leitura fique pronta) e de uma lógica de decisão que recebe os dados já convertidos para chamar as rotinas de secura e de umidade. É nessa etapa que as interrupções são executadas. 
 
 Por fim, são chamadas as sub-rotinas de apoio para enviar os dados ao Display e realizar os atrasos, e o programa retorna ao loop principal. 
+
+## Integrantes da Equipe
+Allan Barros Cruz
+Caio Sereno
+Cecília Brito
+Magno Macedo
+Rian Victor Ribeiro
