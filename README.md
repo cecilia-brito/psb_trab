@@ -2,7 +2,7 @@
 
 ![Representação do Circuito no SimulIDE](/circuito.png "Representação do Circuito no SimulIDE")
 
-OBS: *no arquivo do simulador de circuito, o sensor foi substituído por um potenciômetro para que não seja necessário baixar nenhum addon para o SimulIDE.*
+OBS: *no arquivo do simulador de circuito, o sensor foi substituído por um potenciômetro para que não seja necessário baixar nenhum addon para o SimulIDE. O funcionamento é o mesmo, alterando apenas a estética.*
 
 ## Funcionalidades
 O nosso circuito é composto por um sensor lm393, um Arduino Uno-98, um display LCD 16x2 e um buzzer. Com o sensor inserido no solo e o programa em funcionamento, o display irá avisar quando o solo estiver abaixo ou acima dos parâmetros adequados de umidade. Além disso, o buzzer irá apitar por um período configurável para chamar a atenção do usuário caso o solo esteja seco.
