@@ -1,17 +1,17 @@
 .nolist
 .include "m328def.inc"
 
-.def adc_low  = r16
+.def adc_low  = r15
 .def adc_high = r17
 .def temp_low = r18
 .def temp_high = r19
 .def counter4 = r23
-.def counter2 = r25
-.def seco = r30
 .def modo_atual = r24
-.def counter_time = r26
+.def counter2 = r25
+.def counter_time = r28
+.def seco = r30
 
-.equ min = 15
+.equ min = 10
 .equ cinco_min = 75
 
 .org 0x0000
@@ -33,7 +33,6 @@ main:
     ldi adc_high, 0
     ldi modo_atual, 1
     ldi counter_time, 0    ; <<< CORREÇÃO >>>
-
 iniciar_adc:
     ldi r16, high(RAMEND)
     out SPH, r16
@@ -44,7 +43,6 @@ iniciar_adc:
     sts ADMUX, temp_low
     ldi temp_low, (1<<ADEN)|(1<<ADPS2)|(1<<ADPS1)|(1<<ADPS0)|(1<<ADSC)
     sts ADCSRA, temp_low
-
 iniciar_lcd:
     rcall delay_ms_display_ligar
     ldi   R16, 0x33
@@ -122,6 +120,9 @@ mensagem_seco:
     ldi R16, '!'
     rcall enviar_dado_lcd
     rcall delay_segundos_mensagem
+    ldi R16, ' '
+    rcall enviar_dado_lcd
+    rcall delay_segundos_mensagem
     ldi R16, 0xC0
     rcall enviar_comando_lcd
     rcall delay_ms_display_ligar
@@ -146,13 +147,19 @@ mensagem_umido:
     ldi R16, ' '
     rcall enviar_dado_lcd
     rcall delay_segundos_mensagem
-    ldi R16, 'U'
+    ldi R16, 'M'
     rcall enviar_dado_lcd
     rcall delay_segundos_mensagem
-    ldi R16, 'm'
+    ldi R16, 'o'
     rcall enviar_dado_lcd
     rcall delay_segundos_mensagem
-    ldi R16, 'i'
+    ldi R16, 'l'
+    rcall enviar_dado_lcd
+    rcall delay_segundos_mensagem
+    ldi R16, 'h'
+    rcall enviar_dado_lcd
+    rcall delay_segundos_mensagem
+    ldi R16, 'a'
     rcall enviar_dado_lcd
     rcall delay_segundos_mensagem
     ldi R16, 'd'
@@ -164,11 +171,73 @@ mensagem_umido:
     ldi R16, '!'
     rcall enviar_dado_lcd
     rcall delay_segundos_mensagem
+
+    ldi R16, ' '
+    rcall enviar_dado_lcd
+    rcall delay_segundos_mensagem
     ldi R16, 0xC0
     rcall enviar_comando_lcd
     rcall delay_ms_display_ligar
     ret
 
+mensagem_nseco:
+    ldi   R16, 0x80         ;clear LCD
+    rcall enviar_comando_lcd
+    rcall delay_ms_display_ligar
+
+    ldi R16, 'E'
+    rcall enviar_dado_lcd
+    rcall delay_segundos_mensagem
+
+    ldi R16, 's'
+    rcall enviar_dado_lcd
+    rcall delay_segundos_mensagem
+
+    ldi R16, 't'
+    rcall enviar_dado_lcd
+    rcall delay_segundos_mensagem
+
+    ldi R16, 'a'
+    rcall enviar_dado_lcd
+    rcall delay_segundos_mensagem
+
+    ldi R16, ' '
+    rcall enviar_dado_lcd
+    rcall delay_segundos_mensagem
+
+    ldi R16, 'U'
+    rcall enviar_dado_lcd
+    rcall delay_segundos_mensagem
+    
+    ldi R16, 'm'
+    rcall enviar_dado_lcd
+    rcall delay_segundos_mensagem
+
+    ldi R16, 'i'
+    rcall enviar_dado_lcd
+    rcall delay_segundos_mensagem
+
+    ldi R16, 'd'
+    rcall enviar_dado_lcd
+    rcall delay_segundos_mensagem
+
+    ldi R16, 'o'
+    rcall enviar_dado_lcd
+    rcall delay_segundos_mensagem
+
+    ldi R16, '!'
+    rcall enviar_dado_lcd
+    rcall delay_segundos_mensagem
+
+    ldi R16, ' '
+    rcall enviar_dado_lcd
+    rcall delay_segundos_mensagem
+    ;Segunda linha
+
+    ldi R16, 0xC0        
+    rcall enviar_comando_lcd
+    rcall delay_ms_display_ligar
+    ret
 ; === Leitura ADC e Classificação ===
 
 ler_adc:
@@ -182,6 +251,7 @@ esperar_adc:
     lds r21, ADCSRA
     ori r21, (1 << ADIF)
     sts ADCSRA, r21
+    
     lds adc_low, ADCL
     lds adc_high, ADCH
     ldi seco, 0
@@ -201,6 +271,10 @@ esperar_adc:
     cpc temp_high, counter4
     brlo show_umido
 
+show_nseco:
+   rcall mensagem_nseco
+   rjmp fim_adc
+    
 show_umido:
     rcall mensagem_umido
     rjmp fim_adc
@@ -209,17 +283,17 @@ show_seco:
     ldi seco, 1
     rcall mensagem_seco
 
-fim_adc:
-    ldi R16, 0xC0
-    rcall enviar_comando_lcd
-    rcall delay_ms_display_ligar
-    ldi temp_high, 48
-    mov r16, modo_atual
-    add r16, temp_high
-    rcall enviar_dado_lcd
-    rcall delay_ms_display_ligar
-    rjmp ler_adc
+ fim_adc:        
+        ldi R16, 0xC0
+        rcall enviar_comando_lcd
+        rcall delay_ms_display_ligar
+        
+        ldi r16, 48
+        add r16, modo_atual
+        rcall enviar_dado_lcd
+        rcall delay_ms_display_ligar
 
+        rjmp ler_adc
 ; === LCD ===
 
 enviar_comando_lcd:
@@ -296,7 +370,7 @@ TIMER1_OVF_ISR:
     push r17
     in r16, SREG
     push r16
-
+   
     cpi seco, 1
     brlo nao_seco
     inc counter_time
@@ -322,13 +396,15 @@ modo3:
     rcall tocar_buzzer
 
 nao_seco:
-    ldi r18, low(0x10000)
-    sts TCNT1L, r18
-    ldi r19, high(0x10000)
-    sts TCNT1H, r19
+    push r20
+    ldi r20, low(0x10000)
+    sts TCNT1L, r20
+    ldi r20, high(0x10000)
+    sts TCNT1H, r20
     ldi counter_time, 0
-
+    pop r20
 fim_isr:
+    
     pop r16
     out SREG, r16
     pop r17
