@@ -22,7 +22,7 @@
 
 <item itemtype="Ground" CircId="Ground-127" mainComp="false" Show_id="false" Show_Val="false" Pos="228,116" rotation="0" hflip="1" vflip="1" label="Ground-127" idLabPos="-16,8" labelrot="0" valLabPos="-16,20" valLabRot="0" />
 
-<item itemtype="Potentiometer" CircId="Potentiometer-128" mainComp="false" ShowProp="Resistance" Show_id="false" Show_Val="true" Pos="604,60" rotation="0" hflip="1" vflip="1" label="Potentiometer-128" idLabPos="-16,-40" labelrot="0" valLabPos="15,-20" valLabRot="0" Resistance="10 kΩ" Value_Ohm="0 Ω" Slider="false" Scale="1" />
+<item itemtype="Subcircuit" CircId="FC28-108" mainComp="false" Show_id="true" Show_Val="false" Pos="532,116" rotation="0" hflip="1" vflip="1" label="FC28-108" idLabPos="41.8388,-10.7709" labelrot="0" valLabPos="-16,20" valLabRot="0" Logic_Symbol="false" />
 
 <item itemtype="Connector" uid="Connector-20" startpinid="Hd44780-97-PinEn" endpinid="Uno-98-8" pointList="176,-64,176,84,340,84" />
 
@@ -54,10 +54,10 @@
 
 <item itemtype="Connector" uid="Connector-87" startpinid="Ground-127-Gnd" endpinid="Led-125-rPin" pointList="228,100,252,100,252,116" />
 
-<item itemtype="Connector" uid="Connector-88" startpinid="Potentiometer-128-PinM" endpinid="Uno-98-A0" pointList="604,76,504,76,504,52,484,52" />
+<item itemtype="Connector" uid="Connector-44" startpinid="FC28-108-SENAL" endpinid="Uno-98-A0" pointList="556,112,556,52,484,52" />
 
-<item itemtype="Connector" uid="Connector-89" startpinid="Potentiometer-128-PinA" endpinid="Uno-98-5V0" pointList="588,60,512,60,512,92,484,92" />
+<item itemtype="Connector" uid="Connector-93" startpinid="FC28-108-VCC" endpinid="Uno-98-5V0" pointList="560,112,560,92,484,92" />
 
-<item itemtype="Connector" uid="Connector-90" startpinid="Potentiometer-128-PinB" endpinid="Uno-98-GND0" pointList="620,60,620,76,484,76" />
+<item itemtype="Connector" uid="Connector-94" startpinid="FC28-108-GND" endpinid="Uno-98-GND1" pointList="564,112,564,84,484,84" />
 
 </circuit>
