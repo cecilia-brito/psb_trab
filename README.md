@@ -1,6 +1,7 @@
 # Detector de Umidade de Solo
 
 ![Representação do Circuito no SimulIDE](/circuito.png "Representação do Circuito no SimulIDE")
+
 OBS: *no arquivo do simulador de circuito, o sensor foi substituído por um potenciômetro para que não seja necessário baixar nenhum addon para o SimulIDE.*
 
 ## Funcionalidades
