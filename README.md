@@ -18,7 +18,11 @@ Por fim, são chamadas as sub-rotinas de apoio para enviar os dados ao Display e
 
 ## Integrantes da Equipe
 Allan Barros Cruz
+
 Caio Sereno
+
 Cecília Brito
+
 Magno Macedo
+
 Rian Victor Ribeiro
