@@ -118,11 +118,11 @@ Isso gerará o arquivo `codigo.hex` que pode ser utilizado tanto em simuladores 
 
 ## Equipe
 
-- Allan Barros Cruz  
-- Caio Sereno  
-- Cecília Brito  
-- Magno Macedo  
-- Rian Victor Ribeiro  
+- Allan Barros Cruz
+- Caio Sereno Santos Rebouças
+- Cecília Brito Santos
+- Magno Macedo Miranda
+- Rian Victor Ribeiro
 
 ## Licença
 
