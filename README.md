@@ -1,85 +1,79 @@
-# Projeto: Monitor de Umidade de solo com LCD e Buzzer - ATmega328P
+# Projeto: Monitor de Umidade com LCD e Buzzer - ATmega328P
 
-## Visao Geral
+## Visão Geral
 
-Este projeto implementa um sistema de monitoramento de umidade do solo usando um sensor analogico, um display LCD 16x2 e um buzzer, tudo controlado por um microcontrolador ATmega328P. O objetivo e alertar o usuario quando o solo estiver seco atraves de mensagens no display e sinais sonoros. O usuario pode alternar entre tres modos de funcionamento, controlando a periodicidade do alerta sonoro.
+Este projeto implementa um sistema de monitoramento de umidade do solo usando um sensor analógico, um display LCD 16x2 e um buzzer, tudo controlado por um microcontrolador ATmega328P (presente na placa Arduino Uno-98). O objetivo é alertar o usuário quando o solo estiver seco através de mensagens no display e sinais sonoros. O usuário pode alternar entre três modos de funcionamento, controlando a periodicidade do alerta sonoro.
 
 ## Componentes Utilizados
 
 - **Microcontrolador**: ATmega328P (Arduino Uno-98)
-- **Sensor de umidade**: LM393 (saida analogica)
+- **Sensor de umidade**: LM393 (saída analógica)
 - **Display LCD 16x2**: operando em modo 4 bits
 - **Buzzer**: ativo
-- **Botao**: conectado ao pino PD2 (INT0)
-- **Software de simulacao**: [SimulIDE](https://www.simulide.com/)
+- **Botão**: conectado ao pino PD2 (INT0)
+- **Software de simulação**: [SimulIDE](https://www.simulide.com/)
 - **Montador**: [AVRA](https://github.com/Ro5bert/avra)
-- **Arquivo de simulacao**: `.sim` com circuito montado no SimulIDE (presente no repositorio)
-- ![Representação do Circuito no SimulIDE](/circuito.png "Representação do Circuito no SimulIDE")
-
-OBS: *no arquivo do simulador de circuito, o sensor foi substituído por um potenciômetro para que não seja necessário baixar nenhum addon para o SimulIDE. O funcionamento é o mesmo, alterando apenas a estética.*
-
+- **Arquivo de simulação**: `.sim1` com circuito montado no SimulIDE (presente no repositório)
 
 ## Funcionalidades
 
-- Leitura da umidade do solo via ADC
-- Exibicao da mensagem no display:
-  - "Esta Molhado!" (umidade alta)
-  - "Esta Umido!" (umidade moderada)
-  - "Esta Seco!" (umidade baixa)
-- Buzzer apita para alertar solo seco, com 3 modos de operacao
-- Mudanca de modo atraves do botao (PD2 / INT0)
-- LCD tambem exibe o numero do modo atual
+- **Leitura analógica de umidade**: o sensor LM393 fornece uma tensão proporcional ao nível de umidade do solo. O conversor ADC do ATmega328P interpreta este valor para determinar a condição do solo.
+- **Classificação de umidade**: baseado no valor lido, o solo é classificado como "Molhado", "Úmido" ou "Seco".
+- **Exibição no LCD**: mensagens correspondentes são exibidas no display LCD 16x2, com o texto "Está Molhado!", "Está Úmido!" ou "Está Seco!".
+- **Controle de modos de alerta**: através de um botão, o usuário alterna entre três modos de funcionamento que definem a frequência com que o buzzer é acionado.
+- **Alerta sonoro com buzzer**: quando o solo está seco, o buzzer é ativado com base no modo de operação atual.
+- **Display do modo atual**: o número do modo atual (1, 2 ou 3) é mostrado na segunda linha do LCD.
 
-## Modos de Operacao
+## Modos de Operação
 
 | Modo | Comportamento do Buzzer                      |
 |------|----------------------------------------------|
 | 1    | Toca sempre que o solo estiver seco          |
-| 2    | Toca apenas apos um tempo minimo de secura   |
-| 3    | Toca apenas apos cinco minutos de secura     |
+| 2    | Toca apenas após um tempo mínimo de secura   |
+| 3    | Toca apenas após cinco minutos de secura     |
 
-## Funcionamento do Codigo
+## Funcionamento do Código
 
-O codigo foi escrito inteiramente em Assembly e segue uma estrutura baseada em inicializacoes, laço principal e interrupcoes.
+O código foi escrito inteiramente em Assembly e segue uma estrutura baseada em inicializações, laço principal e interrupções.
 
-### Inicializacao
+### Inicialização
 
-- **Pinos**: configura as direcoes dos registradores para entrada e saida de dados (sensor, LCD, buzzer, botao)
+- **Pinos**: configura as direções dos registradores para entrada e saída de dados (sensor, LCD, buzzer, botão)
 - **Stack Pointer**: inicializado para o topo da RAM
 - **ADC**: ativado e configurado para leitura no canal PC0 (ADC0)
-- **LCD**: inicializado em modo 4 bits com comandos sequenciais para preparacao do display
-- **Interrupcoes**:
-  - **INT0** habilitada para detecao de borda de descida (botao no PD2)
+- **LCD**: inicializado em modo 4 bits com comandos sequenciais para preparação do display
+- **Interrupções**:
+  - **INT0** habilitada para detecção de borda de descida (botão no PD2)
   - **TIMER1** configurado com prescaler para gerar overflow em intervalos regulares
 
 ### Loop Principal
 
 1. **Leitura do ADC**:
-   - Inicia a conversao
-   - Espera o fim da conversao
-   - Le os valores de ADCL e ADCH
-2. **Classificacao**:
+   - Inicia a conversão
+   - Espera o fim da conversão
+   - Lê os valores de ADCL e ADCH
+2. **Classificação**:
    - Se o valor ADC >= 900: solo seco
-   - Se 400 <= valor ADC < 900: solo umido
+   - Se 400 <= valor ADC < 900: solo úmido
    - Se valor ADC < 400: solo molhado
 3. **Mensagem**:
    - Exibe a mensagem correspondente no LCD, caractere por caractere
-   - Atualiza a linha de modo no display (com o numero do modo atual)
+   - Atualiza a linha de modo no display (com o número do modo atual)
 4. **Retorna ao passo 1** (laço infinito)
 
-### Interrupcao INT0
+### Interrupção INT0
 
-- Alteracao do modo de operacao (1 → 2 → 3 → 1)
-- Cicla entre os modos de buzzer ao pressionar o botao
+- Alteração do modo de operação (1 → 2 → 3 → 1)
+- Cicla entre os modos de buzzer ao pressionar o botão
 
-### Interrupcao TIMER1_OVF
+### Interrupção TIMER1_OVF
 
-- Executada periodicamente (dependendo da configuracao do timer)
+- Executada periodicamente (dependendo da configuração do timer)
 - Se o solo estiver seco:
   - Modo 1: buzzer toca sempre
   - Modo 2: buzzer toca apenas se `counter_time >= min`
   - Modo 3: buzzer toca apenas se `counter_time >= cinco_min`
-- Caso contrario, zera o contador de tempo seco
+- Caso contrário, zera o contador de tempo seco
 
 ### Sub-rotinas
 
@@ -90,46 +84,54 @@ O codigo foi escrito inteiramente em Assembly e segue uma estrutura baseada em i
 
 ## Como Compilar
 
-Utilize o AVRA para montar o codigo:
+Utilize o AVRA para montar o código:
 
 ```bash
-avra codigo.asm
+avra -fI codigo.asm
 ```
 
-Isso gerara o arquivo `codigo.hex` que pode ser utilizado tanto em simuladores quanto em programadores fisicos.
-
-OBS:*Lembre-se de sempre ter o arquivo m328def.inc na pasta*
+Isso gerará o arquivo `codigo.hex` que pode ser utilizado tanto em simuladores quanto em programadores físicos.
 
 ## Como Simular
 
 1. Abra o SimulIDE
-2. Carregue o arquivo `projeto.sim` que ja contem a montagem do circuito completo
+2. Carregue o arquivo `projeto.sim1` que já contém a montagem do circuito completo
 3. Carregue o arquivo `codigo.hex` no microcontrolador ATmega328P
-4. Acione o botao para alternar os modos
-5. Acompanhe as mensagens no LCD e a ativacao do buzzer
+4. Acione o botão para alternar os modos
+5. Acompanhe as mensagens no LCD e a ativação do buzzer
+
+## Como Gravar em um Chip Real (Opcional)
+
+Se desejar gravar o firmware em um ATmega328P real:
+
+```bash
+avrdude -c usbasp -p m328p -U flash:w:codigo.hex
+```
+
+> Substitua `usbasp` se estiver usando outro gravador.
 
 ## Pinos Utilizados
 
-| Pino | Funcao                   |
+| Pino | Função                   |
 |------|--------------------------|
-| PC0  | Entrada analogica (sensor) |
-| PD2  | Entrada INT0 (botao)     |
+| PC0  | Entrada analógica (sensor) |
+| PD2  | Entrada INT0 (botão)     |
 | PB0  | EN do LCD                |
 | PB1  | RS do LCD                |
 | PD4  | D4 do LCD                |
 | PD5  | D5 do LCD                |
 | PD6  | D6 do LCD                |
 | PD7  | D7 do LCD                |
-| PB5  | Saida para o buzzer      |
+| PB5  | Saída para o buzzer      |
 
 ## Equipe
 
 - Allan Barros Cruz  
 - Caio Sereno  
-- Cecilia Brito  
-- Magno Macedo Miranda
+- Cecília Brito  
+- Magno Macedo  
 - Rian Victor Ribeiro  
 
-## Licenca
+## Licença
 
 Este projeto foi desenvolvido com fins educacionais e pode ser livremente utilizado para estudo e aprendizado.
