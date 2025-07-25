@@ -14,6 +14,8 @@ Este projeto implementa um sistema de monitoramento de umidade do solo usando um
 - **Software de simulação**: [SimulIDE](https://www.simulide.com/)
 - **Montador**: [AVRA](https://github.com/Ro5bert/avra)
 - **Arquivo de simulação**: `.sim1` com circuito montado no SimulIDE (presente no repositório)
+![Representação do Circuito no SimulIDE](/circuito.png "Representação do Circuito no SimulIDE")
+
 
 ## Funcionalidades
 
