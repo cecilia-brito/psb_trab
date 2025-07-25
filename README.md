@@ -1,10 +1,4 @@
-# Detector de Umidade de Solo
-
-![Representação do Circuito no SimulIDE](/circuito.png "Representação do Circuito no SimulIDE")
-
-OBS: *no arquivo do simulador de circuito, o sensor foi substituído por um potenciômetro para que não seja necessário baixar nenhum addon para o SimulIDE. O funcionamento é o mesmo, alterando apenas a estética.*
-
-# Projeto: Monitor de Umidade com LCD e Buzzer - ATmega328P
+# Projeto: Monitor de Umidade de solo com LCD e Buzzer - ATmega328P
 
 ## Visao Geral
 
@@ -20,6 +14,10 @@ Este projeto implementa um sistema de monitoramento de umidade do solo usando um
 - **Software de simulacao**: [SimulIDE](https://www.simulide.com/)
 - **Montador**: [AVRA](https://github.com/Ro5bert/avra)
 - **Arquivo de simulacao**: `.sim` com circuito montado no SimulIDE (presente no repositorio)
+- ![Representação do Circuito no SimulIDE](/circuito.png "Representação do Circuito no SimulIDE")
+
+OBS: *no arquivo do simulador de circuito, o sensor foi substituído por um potenciômetro para que não seja necessário baixar nenhum addon para o SimulIDE. O funcionamento é o mesmo, alterando apenas a estética.*
+
 
 ## Funcionalidades
 
