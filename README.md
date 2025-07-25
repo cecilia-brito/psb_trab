@@ -4,27 +4,134 @@
 
 OBS: *no arquivo do simulador de circuito, o sensor foi substituído por um potenciômetro para que não seja necessário baixar nenhum addon para o SimulIDE. O funcionamento é o mesmo, alterando apenas a estética.*
 
+# Projeto: Monitor de Umidade com LCD e Buzzer - ATmega328P
+
+## Visao Geral
+
+Este projeto implementa um sistema de monitoramento de umidade do solo usando um sensor analogico, um display LCD 16x2 e um buzzer, tudo controlado por um microcontrolador ATmega328P. O objetivo e alertar o usuario quando o solo estiver seco atraves de mensagens no display e sinais sonoros. O usuario pode alternar entre tres modos de funcionamento, controlando a periodicidade do alerta sonoro.
+
+## Componentes Utilizados
+
+- **Microcontrolador**: ATmega328P (Arduino Uno-98)
+- **Sensor de umidade**: LM393 (saida analogica)
+- **Display LCD 16x2**: operando em modo 4 bits
+- **Buzzer**: ativo
+- **Botao**: conectado ao pino PD2 (INT0)
+- **Software de simulacao**: [SimulIDE](https://www.simulide.com/)
+- **Montador**: [AVRA](https://github.com/Ro5bert/avra)
+- **Arquivo de simulacao**: `.sim` com circuito montado no SimulIDE (presente no repositorio)
+
 ## Funcionalidades
-O nosso circuito é composto por um sensor lm393, um Arduino Uno-98, um display LCD 16x2 e um buzzer. Com o sensor inserido no solo e o programa em funcionamento, o display irá avisar quando o solo estiver abaixo ou acima dos parâmetros adequados de umidade. Além disso, o buzzer irá apitar por um período configurável para chamar a atenção do usuário caso o solo esteja seco.
 
-## Funcionamento do Código
-O código, assim como requisitado pelas especificações do trabalho, foi escrito em Assembly compatível com o ATMega328P e inclui duas interrupções: uma de tempo e outra de Int0, ambas servindo para controlar as funcionalidades do buzzer. 
+- Leitura da umidade do solo via ADC
+- Exibicao da mensagem no display:
+  - "Esta Molhado!" (umidade alta)
+  - "Esta Umido!" (umidade moderada)
+  - "Esta Seco!" (umidade baixa)
+- Buzzer apita para alertar solo seco, com 3 modos de operacao
+- Mudanca de modo atraves do botao (PD2 / INT0)
+- LCD tambem exibe o numero do modo atual
 
-A interrupção de tempo faz com que o buzzer seja periodicamente acionado em casos de baixa umidade. Por outro lado, a interrupção de Int0 seleciona qual será a periodicidade que o buzzer será acionado. 
+## Modos de Operacao
 
-Além das configurações padrão (diretivas, definições, vetores de interrupção, pinos, etc), o código também é responsável por inicializar o conversor analógico-digital (ADC), o Display LCD e as interrupções. 
+| Modo | Comportamento do Buzzer                      |
+|------|----------------------------------------------|
+| 1    | Toca sempre que o solo estiver seco          |
+| 2    | Toca apenas apos um tempo minimo de secura   |
+| 3    | Toca apenas apos cinco minutos de secura     |
 
-A lógica principal consiste de um loop infinito que inicia a conversão do ADC (esperando até que a leitura fique pronta) e de uma lógica de decisão que recebe os dados já convertidos para chamar as rotinas de secura e de umidade. É nessa etapa que as interrupções são executadas. 
+## Funcionamento do Codigo
 
-Por fim, são chamadas as sub-rotinas de apoio para enviar os dados ao Display e realizar os atrasos, e o programa retorna ao loop principal. 
+O codigo foi escrito inteiramente em Assembly e segue uma estrutura baseada em inicializacoes, laço principal e interrupcoes.
 
-## Integrantes da Equipe
-Allan Barros Cruz
+### Inicializacao
 
-Caio Sereno
+- **Pinos**: configura as direcoes dos registradores para entrada e saida de dados (sensor, LCD, buzzer, botao)
+- **Stack Pointer**: inicializado para o topo da RAM
+- **ADC**: ativado e configurado para leitura no canal PC0 (ADC0)
+- **LCD**: inicializado em modo 4 bits com comandos sequenciais para preparacao do display
+- **Interrupcoes**:
+  - **INT0** habilitada para detecao de borda de descida (botao no PD2)
+  - **TIMER1** configurado com prescaler para gerar overflow em intervalos regulares
 
-Cecília Brito
+### Loop Principal
 
-Magno Macedo
+1. **Leitura do ADC**:
+   - Inicia a conversao
+   - Espera o fim da conversao
+   - Le os valores de ADCL e ADCH
+2. **Classificacao**:
+   - Se o valor ADC >= 900: solo seco
+   - Se 400 <= valor ADC < 900: solo umido
+   - Se valor ADC < 400: solo molhado
+3. **Mensagem**:
+   - Exibe a mensagem correspondente no LCD, caractere por caractere
+   - Atualiza a linha de modo no display (com o numero do modo atual)
+4. **Retorna ao passo 1** (laço infinito)
 
-Rian Victor Ribeiro
+### Interrupcao INT0
+
+- Alteracao do modo de operacao (1 → 2 → 3 → 1)
+- Cicla entre os modos de buzzer ao pressionar o botao
+
+### Interrupcao TIMER1_OVF
+
+- Executada periodicamente (dependendo da configuracao do timer)
+- Se o solo estiver seco:
+  - Modo 1: buzzer toca sempre
+  - Modo 2: buzzer toca apenas se `counter_time >= min`
+  - Modo 3: buzzer toca apenas se `counter_time >= cinco_min`
+- Caso contrario, zera o contador de tempo seco
+
+### Sub-rotinas
+
+- `tocar_buzzer`: liga o buzzer por um tempo breve
+- `enviar_comando_lcd`: envia comandos para o display LCD (como limpar, mudar cursor)
+- `enviar_dado_lcd`: envia caracteres individuais para o display
+- Delays para sincronizar a escrita e leitura
+
+## Como Compilar
+
+Utilize o AVRA para montar o codigo:
+
+```bash
+avra codigo.asm
+```
+
+Isso gerara o arquivo `codigo.hex` que pode ser utilizado tanto em simuladores quanto em programadores fisicos.
+
+OBS:*Lembre-se de sempre ter o arquivo m328def.inc na pasta*
+
+## Como Simular
+
+1. Abra o SimulIDE
+2. Carregue o arquivo `projeto.sim` que ja contem a montagem do circuito completo
+3. Carregue o arquivo `codigo.hex` no microcontrolador ATmega328P
+4. Acione o botao para alternar os modos
+5. Acompanhe as mensagens no LCD e a ativacao do buzzer
+
+## Pinos Utilizados
+
+| Pino | Funcao                   |
+|------|--------------------------|
+| PC0  | Entrada analogica (sensor) |
+| PD2  | Entrada INT0 (botao)     |
+| PB0  | EN do LCD                |
+| PB1  | RS do LCD                |
+| PD4  | D4 do LCD                |
+| PD5  | D5 do LCD                |
+| PD6  | D6 do LCD                |
+| PD7  | D7 do LCD                |
+| PB5  | Saida para o buzzer      |
+
+## Equipe
+
+- Allan Barros Cruz  
+- Caio Sereno  
+- Cecilia Brito  
+- Magno Macedo Miranda
+- Rian Victor Ribeiro  
+
+## Licenca
+
+Este projeto foi desenvolvido com fins educacionais e pode ser livremente utilizado para estudo e aprendizado.
