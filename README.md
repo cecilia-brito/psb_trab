@@ -100,16 +100,6 @@ Isso gerará o arquivo `codigo.hex` que pode ser utilizado tanto em simuladores 
 4. Acione o botão para alternar os modos
 5. Acompanhe as mensagens no LCD e a ativação do buzzer
 
-## Como Gravar em um Chip Real (Opcional)
-
-Se desejar gravar o firmware em um ATmega328P real:
-
-```bash
-avrdude -c usbasp -p m328p -U flash:w:codigo.hex
-```
-
-> Substitua `usbasp` se estiver usando outro gravador.
-
 ## Pinos Utilizados
 
 | Pino | Função                   |
